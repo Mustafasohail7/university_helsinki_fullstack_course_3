@@ -1,2 +1,3 @@
 /part6/unicafe/node_modules/
 /part6/anecdote/node_modules/
+/part6/query-anecdotes/node_modules/
