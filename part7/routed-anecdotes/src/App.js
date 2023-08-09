@@ -1,14 +1,21 @@
 import { useState } from 'react'
+import { Routes, Route, useMatch, useNavigate } from 'react-router'
+import { Link } from 'react-router-dom'
+
+
+import AnecdoteItem from './components/AnecdoteItem'
 
 const Menu = () => {
+
   const padding = {
     paddingRight: 5
   }
+
   return (
     <div>
-      <a href='#' style={padding}>anecdotes</a>
-      <a href='#' style={padding}>create new</a>
-      <a href='#' style={padding}>about</a>
+      <Link to='/' style={padding}>anecdotes</Link>
+      <Link to='/create' style={padding}>create new</Link>
+      <Link to='/about'>about</Link>
     </div>
   )
 }
@@ -17,7 +24,9 @@ const AnecdoteList = ({ anecdotes }) => (
   <div>
     <h2>Anecdotes</h2>
     <ul>
-      {anecdotes.map(anecdote => <li key={anecdote.id} >{anecdote.content}</li>)}
+      {anecdotes.map(anecdote => 
+      <Link to={`/anecdotes/${anecdote.id}`} ><li key={anecdote.id} >{anecdote.content}</li></Link>
+      )}
     </ul>
   </div>
 )
@@ -49,6 +58,7 @@ const CreateNew = (props) => {
   const [author, setAuthor] = useState('')
   const [info, setInfo] = useState('')
 
+  const navigate = useNavigate()
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -58,6 +68,8 @@ const CreateNew = (props) => {
       info,
       votes: 0
     })
+    props.setNotification(`a new anecdote ${content} created!`)
+    navigate('/')
   }
 
   return (
@@ -103,6 +115,9 @@ const App = () => {
 
   const [notification, setNotification] = useState('')
 
+  const match = useMatch('/anecdotes/:id')
+  const anecdote = match ? anecdotes.find(anecdote => anecdote.id === Number(match.params.id)) : null
+
   const addNew = (anecdote) => {
     anecdote.id = Math.round(Math.random() * 10000)
     setAnecdotes(anecdotes.concat(anecdote))
@@ -122,13 +137,27 @@ const App = () => {
     setAnecdotes(anecdotes.map(a => a.id === id ? voted : a))
   }
 
+  const notificationDisplay = () => {
+    if(notification === '') {
+      return null
+    }
+    setTimeout(() => {
+      setNotification('')
+    }, 3000)
+    return <div>{notification}</div>
+  }
+
   return (
     <div>
       <h1>Software anecdotes</h1>
       <Menu />
-      <AnecdoteList anecdotes={anecdotes} />
-      <About />
-      <CreateNew addNew={addNew} />
+      {notificationDisplay()}
+      <Routes>
+        <Route path='/' element={<AnecdoteList anecdotes={anecdotes} />}/>
+        <Route path='/about' element={<About/>}/>
+        <Route path='/create' element={<CreateNew addNew={addNew} setNotification={setNotification} />}/>
+        <Route path='/anecdotes/:id' element={<AnecdoteItem anecdote={anecdote}/>}/>
+      </Routes>
       <Footer />
     </div>
   )
