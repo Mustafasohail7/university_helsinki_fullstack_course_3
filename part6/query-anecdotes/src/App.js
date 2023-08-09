@@ -3,11 +3,14 @@ import Notification from './components/Notification'
 
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import { getAnecdotes, updateAnecdote } from './request'
+import { useContext } from 'react'
+import NotificationContext from './notificationContext'
 
 
 const App = () => {
 
   const queryClient = useQueryClient()
+  const {notificationDispatch} = useContext(NotificationContext)
 
   const result = useQuery('anecdotes',getAnecdotes,{
     refetchOnWindowFocus: false
@@ -33,6 +36,10 @@ const App = () => {
 
   const handleVote = (anecdote) => {
     updatedAnecdote.mutate({...anecdote, votes: anecdote.votes + 1})
+    notificationDispatch({type: 'SET_NOTIFICATION', data: `you voted '${anecdote.content}'`})
+    setTimeout(() => {
+      notificationDispatch({type: 'CLEAR_NOTIFICATION'})
+    },5000)
   }
 
   return (
